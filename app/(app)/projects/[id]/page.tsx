@@ -49,7 +49,9 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
     await Promise.all([
       supabase
         .from('tasks')
-        .select('id, title, category, status, assigned_to, due_date')
+        .select(
+          'id, title, category, status, assigned_to, due_date, calendar_event_type, calendar_event_id, calendar_events(start_at)'
+        )
         .eq('project_id', id)
         .order('sort_order'),
       supabase
@@ -68,6 +70,18 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
     ])
 
   const eventRows: CalendarEventRow[] = rawEvents ?? []
+
+  const taskRows: TaskRow[] = (tasks ?? []).map((t) => ({
+    id: t.id,
+    title: t.title,
+    category: t.category,
+    status: t.status,
+    assigned_to: t.assigned_to,
+    due_date: t.due_date,
+    calendar_event_type: t.calendar_event_type,
+    calendar_event_id: t.calendar_event_id,
+    scheduled_at: (t.calendar_events as { start_at: string } | null)?.start_at ?? null,
+  }))
 
   const noteRows: NoteRow[] = (notes ?? []).map((n) => ({
     id: n.id,
@@ -136,7 +150,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
                     label: 'Tasks',
                     content: (
                       <TaskList
-                        initialTasks={(tasks ?? []) as TaskRow[]}
+                        initialTasks={taskRows}
                         assignableUsers={userProfiles ?? []}
                         canManage={canManage}
                         currentUserId={user!.id}

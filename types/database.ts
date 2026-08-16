@@ -707,8 +707,10 @@ export type Database = {
       }
       stage_task_templates: {
         Row: {
+          calendar_event_type: Database["public"]["Enums"]["calendar_event_type"] | null
           category: string | null
           created_at: string
+          date_field: string | null
           department_id: string | null
           id: string
           pipeline_stage_id: string
@@ -716,8 +718,10 @@ export type Database = {
           title: string
         }
         Insert: {
+          calendar_event_type?: Database["public"]["Enums"]["calendar_event_type"] | null
           category?: string | null
           created_at?: string
+          date_field?: string | null
           department_id?: string | null
           id?: string
           pipeline_stage_id: string
@@ -725,8 +729,10 @@ export type Database = {
           title: string
         }
         Update: {
+          calendar_event_type?: Database["public"]["Enums"]["calendar_event_type"] | null
           category?: string | null
           created_at?: string
+          date_field?: string | null
           department_id?: string | null
           id?: string
           pipeline_stage_id?: string
@@ -753,9 +759,12 @@ export type Database = {
       tasks: {
         Row: {
           assigned_to: string | null
+          calendar_event_id: string | null
+          calendar_event_type: Database["public"]["Enums"]["calendar_event_type"] | null
           category: string | null
           completed_at: string | null
           created_at: string
+          date_field: string | null
           department_id: string | null
           description: string | null
           due_date: string | null
@@ -769,9 +778,12 @@ export type Database = {
         }
         Insert: {
           assigned_to?: string | null
+          calendar_event_id?: string | null
+          calendar_event_type?: Database["public"]["Enums"]["calendar_event_type"] | null
           category?: string | null
           completed_at?: string | null
           created_at?: string
+          date_field?: string | null
           department_id?: string | null
           description?: string | null
           due_date?: string | null
@@ -785,9 +797,12 @@ export type Database = {
         }
         Update: {
           assigned_to?: string | null
+          calendar_event_id?: string | null
+          calendar_event_type?: Database["public"]["Enums"]["calendar_event_type"] | null
           category?: string | null
           completed_at?: string | null
           created_at?: string
+          date_field?: string | null
           department_id?: string | null
           description?: string | null
           due_date?: string | null
@@ -805,6 +820,13 @@ export type Database = {
             columns: ["assigned_to"]
             isOneToOne: false
             referencedRelation: "user_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_calendar_event_id_fkey"
+            columns: ["calendar_event_id"]
+            isOneToOne: false
+            referencedRelation: "calendar_events"
             referencedColumns: ["id"]
           },
           {
@@ -998,6 +1020,10 @@ export type Database = {
           p_new_stage_id: string
         }
         Returns: undefined
+      }
+      schedule_task: {
+        Args: { p_task_id: string; p_start_at: string }
+        Returns: Database["public"]["Tables"]["calendar_events"]["Row"]
       }
     }
     Enums: {

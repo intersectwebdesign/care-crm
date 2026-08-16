@@ -1,12 +1,16 @@
 'use client'
 
 import { useMemo, useState } from 'react'
+import { CalendarPlus, CalendarCheck } from 'lucide-react'
+import { format } from 'date-fns'
 import { createClient } from '@/lib/supabase/client'
 import { useToast } from '@/components/ui/Toast'
 import { Badge } from '@/components/ui/Badge'
 import { Select } from '@/components/ui/Select'
-import { TaskStatus } from '@/types'
+import { Button } from '@/components/ui/Button'
+import { CalendarEventType, TaskStatus } from '@/types'
 import { TablesUpdate } from '@/types/database'
+import { ScheduleTaskModal } from './ScheduleTaskModal'
 
 export interface TaskRow {
   id: string
@@ -15,6 +19,9 @@ export interface TaskRow {
   status: TaskStatus
   assigned_to: string | null
   due_date: string | null
+  calendar_event_type: CalendarEventType | null
+  calendar_event_id: string | null
+  scheduled_at?: string | null
 }
 
 export interface AssignableUser {
@@ -34,6 +41,7 @@ export function TaskList({
   currentUserId: string
 }) {
   const [tasks, setTasks] = useState(initialTasks)
+  const [schedulingTask, setSchedulingTask] = useState<TaskRow | null>(null)
   const { show } = useToast()
   const supabase = createClient()
 
@@ -78,25 +86,53 @@ export function TaskList({
           <ul className="space-y-1.5">
             {categoryTasks.map((task) => {
               const canToggle = canManage || task.assigned_to === currentUserId
+              const isSchedulable = Boolean(task.calendar_event_type)
+              const isScheduled = Boolean(task.calendar_event_id)
+
               return (
                 <li
                   key={task.id}
                   className="flex items-center gap-3 rounded-lg border border-gray-200 bg-white px-3 py-2.5"
                 >
-                  <input
-                    type="checkbox"
-                    checked={task.status === 'done'}
-                    disabled={!canToggle}
-                    onChange={() => toggleDone(task)}
-                    className="h-5 w-5 shrink-0 rounded border-gray-300 text-blue-600 focus:ring-blue-500 disabled:opacity-40"
-                  />
+                  {isSchedulable ? (
+                    isScheduled ? (
+                      <CalendarCheck className="h-5 w-5 shrink-0 text-teal-600" />
+                    ) : canManage ? (
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => setSchedulingTask(task)}
+                        className="shrink-0"
+                      >
+                        <CalendarPlus className="h-3.5 w-3.5" />
+                        Schedule
+                      </Button>
+                    ) : (
+                      <CalendarPlus className="h-5 w-5 shrink-0 text-gray-300" />
+                    )
+                  ) : (
+                    <input
+                      type="checkbox"
+                      checked={task.status === 'done'}
+                      disabled={!canToggle}
+                      onChange={() => toggleDone(task)}
+                      className="h-5 w-5 shrink-0 rounded border-gray-300 text-blue-600 focus:ring-blue-500 disabled:opacity-40"
+                    />
+                  )}
+
                   <span
                     className={`min-w-0 flex-1 text-sm ${
                       task.status === 'done' ? 'text-gray-400 line-through' : 'text-gray-900'
                     }`}
                   >
                     {task.title}
+                    {isScheduled && task.scheduled_at && (
+                      <span className="ml-2 text-xs font-normal text-teal-600 no-underline">
+                        {format(new Date(task.scheduled_at), 'd MMM, h:mm a')}
+                      </span>
+                    )}
                   </span>
+
                   {task.status !== 'done' && task.status !== 'todo' && (
                     <Badge status={task.status}>{task.status.replace('_', ' ')}</Badge>
                   )}
@@ -126,6 +162,24 @@ export function TaskList({
           </ul>
         </div>
       ))}
+
+      {schedulingTask && (
+        <ScheduleTaskModal
+          open={Boolean(schedulingTask)}
+          onClose={() => setSchedulingTask(null)}
+          taskId={schedulingTask.id}
+          taskTitle={schedulingTask.title}
+          onScheduled={(startAt, eventId) => {
+            setTasks((prev) =>
+              prev.map((t) =>
+                t.id === schedulingTask.id
+                  ? { ...t, status: 'done', calendar_event_id: eventId, scheduled_at: startAt }
+                  : t
+              )
+            )
+          }}
+        />
+      )}
     </div>
   )
 }
