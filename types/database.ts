@@ -923,6 +923,14 @@ export type Database = {
         Args: never
         Returns: Database["public"]["Enums"]["user_role"]
       }
+      move_pipeline_stage: {
+        Args: {
+          p_entity_id: string
+          p_entity_type: Database["public"]["Enums"]["pipeline_type"]
+          p_new_stage_id: string
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       note_visibility: "internal" | "external"
