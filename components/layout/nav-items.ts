@@ -10,9 +10,9 @@ export interface NavItem {
 
 export const NAV_ITEMS: NavItem[] = [
   { key: 'dashboard', href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { key: 'intake', href: '/intake', label: 'Intake', icon: Inbox },
   { key: 'clients', href: '/clients', label: 'Clients', icon: Users },
   { key: 'contractors', href: '/contractors', label: 'Staff', icon: UserCog },
-  { key: 'intake', href: '/intake', label: 'Intake', icon: Inbox },
   { key: 'projects', href: '/projects', label: 'Projects', icon: FolderKanban },
   { key: 'helpdesk', href: '/helpdesk', label: 'Helpdesk', icon: Headset },
   { key: 'settings', href: '/settings', label: 'Settings', icon: Settings },
