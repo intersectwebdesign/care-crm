@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Client Referral Form</title>
+<style>
+  :root { --bg:#F6F7F8; --surface:#FFFFFF; --border:#E1E4E9; --text:#1B2430; --text-soft:#66707C; --accent:#2C6E63; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font-family:-apple-system,"Segoe UI",Inter,Roboto,sans-serif; }
+  .wrap { max-width: 560px; margin: 0 auto; padding: 40px 20px 80px; }
+  h1 { font-size: 20px; margin: 0 0 4px 0; }
+  p.sub { color: var(--text-soft); font-size: 13.5px; margin: 0 0 28px 0; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 26px; }
+  label { display:block; font-size: 12.5px; font-weight: 600; color: var(--text-soft); margin: 16px 0 6px; }
+  label:first-of-type { margin-top: 0; }
+  input, select, textarea {
+    width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border);
+    font-size: 14px; font-family: inherit; background: var(--bg);
+  }
+  .hp { position: absolute; left: -9999px; }
+  button {
+    margin-top: 24px; width: 100%; padding: 13px; border-radius: 8px; border: none;
+    background: var(--accent); color: white; font-size: 14.5px; font-weight: 600; cursor: pointer;
+  }
+  button:disabled { opacity: 0.6; cursor: not-allowed; }
+  .req { color: #B3401F; }
+  .confirm { text-align:center; padding: 40px 10px; }
+  .confirm h1 { font-size: 22px; }
+  .confirm p { color: var(--text-soft); font-size: 14px; }
+  .err { background: #FBEAE4; color: #B3401F; padding: 10px 14px; border-radius: 8px; font-size: 13px; margin-bottom: 16px; display: none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div id="formView">
+    <h1>Client referral form</h1>
+    <p class="sub">Tell us a little about yourself or the person you're referring, and our team will be in touch.</p>
+    <div class="card">
+      <div class="err" id="errBox"></div>
+      <form id="referralForm">
+        <input class="hp" type="text" name="website" tabindex="-1" autocomplete="off">
+        <label>Full name <span class="req">*</span></label>
+        <input type="text" name="name" required>
+        <label>Date of birth</label>
+        <input type="date" name="dob">
+        <label>Phone</label>
+        <input type="tel" name="phone">
+        <label>Email</label>
+        <input type="email" name="email">
+        <label>Address</label>
+        <input type="text" name="address">
+        <label>Gender</label>
+        <input type="text" name="gender">
+        <label>What type of support are you looking for?</label>
+        <input type="text" name="services_position" placeholder="e.g. personal care, nursing, cleaning">
+        <label>Funding source</label>
+        <input type="text" name="funding_source" placeholder="e.g. NDIS, Home Care Package, Private">
+        <label>Funding / plan number (if known)</label>
+        <input type="text" name="funding_number">
+        <label>Representative name (if applying on someone's behalf)</label>
+        <input type="text" name="representative_name">
+        <label>Representative phone</label>
+        <input type="tel" name="representative_phone">
+        <label>Representative email</label>
+        <input type="email" name="representative_email">
+        <label>How did you hear about us?</label>
+        <input type="text" name="intake_source">
+        <button type="submit" id="submitBtn">Submit referral</button>
+      </form>
+    </div>
+  </div>
+  <div id="confirmView" style="display:none;" class="confirm">
+    <h1>Thanks — we've got it</h1>
+    <p>Your referral has been received. Our team will be in touch soon.</p>
+  </div>
+</div>
+
+<script>
+const ENDPOINT = "https://isuzryzmitgmyywafaol.supabase.co/functions/v1/intake-form";
+
+document.getElementById("referralForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById("submitBtn");
+  const errBox = document.getElementById("errBox");
+  errBox.style.display = "none";
+  btn.disabled = true;
+  btn.textContent = "Submitting…";
+
+  const form = e.target;
+  const fields = {};
+  new FormData(form).forEach((v, k) => { fields[k] = v; });
+
+  try {
+    const res = await fetch(ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type: "client", fields }),
+    });
+    const data = await res.json();
+    if (!res.ok || data.error) throw new Error(data.error || "Something went wrong");
+
+    document.getElementById("formView").style.display = "none";
+    document.getElementById("confirmView").style.display = "block";
+  } catch (err) {
+    errBox.textContent = "Sorry, something went wrong submitting your referral. Please try again or contact us directly.";
+    errBox.style.display = "block";
+    btn.disabled = false;
+    btn.textContent = "Submit referral";
+  }
+});
+</script>
+</body>
+</html>
