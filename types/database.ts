@@ -923,6 +923,7 @@ export type Database = {
         Args: never
         Returns: Database["public"]["Enums"]["user_role"]
       }
+      can_view_project: { Args: { p_project_id: string }; Returns: boolean }
       move_pipeline_stage: {
         Args: {
           p_entity_id: string
