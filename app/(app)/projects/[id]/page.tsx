@@ -9,6 +9,8 @@ import { TaskList, TaskRow } from '@/components/projects/TaskList'
 import { NotesPanel, NoteRow } from '@/components/projects/NotesPanel'
 import { ActivityFeed, ActivityRow } from '@/components/projects/ActivityFeed'
 import { AssignmentPanel, AssignmentRow } from '@/components/projects/AssignmentPanel'
+import { ProjectCalendarPanel } from '@/components/calendar/ProjectCalendarPanel'
+import { CalendarEventRow } from '@/components/calendar/types'
 
 export default async function ProjectDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -39,25 +41,33 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
     (project.contractors as { name: string } | null)?.name ??
     project.name
 
-  const [{ data: tasks }, { data: notes }, { data: activity }, { data: userProfiles }] = await Promise.all([
-    supabase
-      .from('tasks')
-      .select('id, title, category, status, assigned_to, due_date')
-      .eq('project_id', id)
-      .order('sort_order'),
-    supabase
-      .from('notes')
-      .select('id, body, visibility, created_at, author_id, author:user_profiles!notes_author_id_fkey(full_name)')
-      .eq('project_id', id)
-      .order('created_at', { ascending: false }),
-    supabase
-      .from('project_activity')
-      .select('id, activity_type, summary, created_at')
-      .eq('project_id', id)
-      .order('created_at', { ascending: false })
-      .limit(50),
-    supabase.from('user_profiles').select('id, full_name'),
-  ])
+  const eventFilters = [`project_id.eq.${id}`]
+  if (project.client_id) eventFilters.push(`client_id.eq.${project.client_id}`)
+  if (project.contractor_id) eventFilters.push(`contractor_id.eq.${project.contractor_id}`)
+
+  const [{ data: tasks }, { data: notes }, { data: activity }, { data: userProfiles }, { data: rawEvents }] =
+    await Promise.all([
+      supabase
+        .from('tasks')
+        .select('id, title, category, status, assigned_to, due_date')
+        .eq('project_id', id)
+        .order('sort_order'),
+      supabase
+        .from('notes')
+        .select('id, body, visibility, created_at, author_id, author:user_profiles!notes_author_id_fkey(full_name)')
+        .eq('project_id', id)
+        .order('created_at', { ascending: false }),
+      supabase
+        .from('project_activity')
+        .select('id, activity_type, summary, created_at')
+        .eq('project_id', id)
+        .order('created_at', { ascending: false })
+        .limit(50),
+      supabase.from('user_profiles').select('id, full_name'),
+      supabase.from('calendar_events').select('*').or(eventFilters.join(',')).order('start_at'),
+    ])
+
+  const eventRows: CalendarEventRow[] = rawEvents ?? []
 
   const noteRows: NoteRow[] = (notes ?? []).map((n) => ({
     id: n.id,
@@ -142,6 +152,20 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
                         initialNotes={noteRows}
                         currentUserId={user!.id}
                         currentUserName={profile?.full_name ?? 'Unknown'}
+                      />
+                    ),
+                  },
+                  {
+                    id: 'calendar',
+                    label: 'Calendar',
+                    content: (
+                      <ProjectCalendarPanel
+                        initialEvents={eventRows}
+                        canManage={canManage}
+                        clientId={project.client_id}
+                        contractorId={project.contractor_id}
+                        projectId={id}
+                        entityName={entityName}
                       />
                     ),
                   },

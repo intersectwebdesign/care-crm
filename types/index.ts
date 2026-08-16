@@ -7,6 +7,7 @@ export type TaskStatus = Enums<'task_status'>
 export type TicketStatus = Enums<'ticket_status'>
 export type TicketPriority = Enums<'ticket_priority'>
 export type NoteVisibility = Enums<'note_visibility'>
+export type CalendarEventType = Enums<'calendar_event_type'>
 
 export type UserProfile = Tables<'user_profiles'>
 export type Client = Tables<'clients'>
@@ -20,6 +21,7 @@ export type Ticket = Tables<'tickets'>
 export type TicketMessage = Tables<'ticket_messages'>
 export type ProjectActivity = Tables<'project_activity'>
 export type ClientAssignment = Tables<'client_assignments'>
+export type CalendarEvent = Tables<'calendar_events'>
 
 export const NAV_ROLES: Record<string, UserRole[]> = {
   dashboard: ['admin', 'management', 'coordinator', 'support_worker'],

@@ -29,6 +29,22 @@ const STATUS_COLORS: Record<string, string> = {
   // note visibility
   internal: 'bg-purple-100 text-purple-700',
   external: 'bg-teal-100 text-teal-700',
+  // calendar event type
+  visit: 'bg-teal-100 text-teal-700',
+  review: 'bg-amber-100 text-amber-700',
+  meeting: 'bg-blue-100 text-blue-700',
+  other: 'bg-gray-100 text-gray-700',
+}
+
+const DOT_COLORS: Record<string, string> = {
+  visit: 'bg-teal-500',
+  review: 'bg-amber-500',
+  meeting: 'bg-blue-500',
+  other: 'bg-gray-400',
+}
+
+export function eventDotColor(eventType: string): string {
+  return DOT_COLORS[eventType] ?? 'bg-gray-400'
 }
 
 export function statusColor(status: string): string {

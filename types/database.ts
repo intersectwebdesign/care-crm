@@ -14,6 +14,73 @@ export type Database = {
   }
   public: {
     Tables: {
+      calendar_events: {
+        Row: {
+          id: string
+          event_type: Database["public"]["Enums"]["calendar_event_type"]
+          title: string
+          notes: string | null
+          start_at: string
+          end_at: string | null
+          client_id: string | null
+          contractor_id: string | null
+          project_id: string | null
+          created_by: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          event_type?: Database["public"]["Enums"]["calendar_event_type"]
+          title: string
+          notes?: string | null
+          start_at: string
+          end_at?: string | null
+          client_id?: string | null
+          contractor_id?: string | null
+          project_id?: string | null
+          created_by?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          event_type?: Database["public"]["Enums"]["calendar_event_type"]
+          title?: string
+          notes?: string | null
+          start_at?: string
+          end_at?: string | null
+          client_id?: string | null
+          contractor_id?: string | null
+          project_id?: string | null
+          created_by?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "calendar_events_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "calendar_events_contractor_id_fkey"
+            columns: ["contractor_id"]
+            isOneToOne: false
+            referencedRelation: "contractors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "calendar_events_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_assignments: {
         Row: {
           assigned_at: string
@@ -934,6 +1001,7 @@ export type Database = {
       }
     }
     Enums: {
+      calendar_event_type: "visit" | "review" | "meeting" | "other"
       note_visibility: "internal" | "external"
       pipeline_type: "client" | "staff"
       project_status: "active" | "on_hold" | "completed" | "archived"
@@ -1068,6 +1136,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      calendar_event_type: ["visit", "review", "meeting", "other"],
       note_visibility: ["internal", "external"],
       pipeline_type: ["client", "staff"],
       project_status: ["active", "on_hold", "completed", "archived"],
